@@ -16,8 +16,17 @@ namespace Gloom
 {
     class Shader
     {
+    private:
+
+        // Private member variables
+        GLuint mProgram;
+        GLint  mStatus;
+        GLint  mLength;
+
     public:
-        Shader()            { mProgram = glCreateProgram(); }
+        Shader() {
+            mProgram = glCreateProgram();
+        }
 
         // Public member functions
         void   activate()   { glUseProgram(mProgram); }
@@ -54,8 +63,10 @@ namespace Gloom
                 glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &mLength);
                 std::unique_ptr<char[]> buffer(new char[mLength]);
                 glGetShaderInfoLog(shader, mLength, nullptr, buffer.get());
-                fprintf(stderr, "%s\n%s", filename.c_str(), buffer.get());
+                fprintf(stdout, "%s\n%s", filename.c_str(), buffer.get());
             }
+            //fprintf(stdout, "todrololo \n");
+            //fprintf(stderr, "todrololo \n");
 
             assert(mStatus);
 
@@ -93,6 +104,12 @@ namespace Gloom
             attach(vertexFilename);
             attach(fragmentFilename);
             link();
+        }
+
+        /* Convenience function to get a uniforms ID from a string
+           containing its name */
+        GLint getUniformFromName(std::string const &uniformName) {
+            return glGetUniformLocation(this->get(), uniformName.c_str());
         }
 
 
@@ -136,10 +153,6 @@ namespace Gloom
         Shader(Shader const &) = delete;
         Shader & operator =(Shader const &) = delete;
 
-        // Private member variables
-        GLuint mProgram;
-        GLint  mStatus;
-        GLint  mLength;
     };
 }
 
