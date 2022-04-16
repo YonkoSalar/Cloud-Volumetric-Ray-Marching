@@ -20,12 +20,16 @@
 #include "gloom/imageLoader.hpp"
 #include "gloom/glfont.h"
 #include <gloom/gloom.hpp>
+#include <gloom/Camera.hpp>
+
+
 
 
 
 
 SceneNode* rootNode;
-SceneNode* ballNode;
+SceneNode* cubeNode;
+Gloom::Camera* cam = new Gloom::Camera();
 
 
 Gloom::Shader* shader;
@@ -34,7 +38,7 @@ Gloom::Shader* shaderText; // Added extra shader for drawing text output
 
 
 
-
+/*
 unsigned int getTextureID(PNGImage *img)
 {
     // Texture ID
@@ -42,7 +46,7 @@ unsigned int getTextureID(PNGImage *img)
 
     // How many textures we want
     glGenTextures(1, &textureID);
-
+ 
     // Bound texture
     glBindTexture(GL_TEXTURE_2D, textureID);
 
@@ -62,87 +66,52 @@ unsigned int getTextureID(PNGImage *img)
     return textureID;
 
 }
+*/
 
 
 
-
-void initGame(GLFWwindow* window) {
+void initScene(GLFWwindow* window) 
+{
     
 
-  
     shader = new Gloom::Shader();
-    shader->makeBasicShader("../shaders/simple.vert", "../shaders/simple.frag");
-   
- 
+    shader->makeBasicShader("../gloom/shaders/simple.vert", "../gloom/shaders/simple.frag");
     shader->activate();
 
 
-
-    // Create meshes
-    Mesh sphere = generateSphere(100, 100, 40);
-
-   
-   
-
-    // Load charmap texture PNG image
-    PNGImage charmap = loadPNGFile("../textures/charmap.png");
-
-
-
-    // Get charmap ID
-    unsigned int charmapID = getTextureID(&charmap);
-
+    // Create mesh (Full screen: 600 x 400)
+    Mesh square = cube(glm::vec3(350,300,0), glm::vec2(1,1));
 
     // Fill buffers
-    unsigned int ballVAO = generateBuffer(sphere);
-   
+    unsigned int cubeVAO = generateBuffer(square);
 
     // Construct scene
     rootNode = createSceneNode();
-    ballNode = createSceneNode();
+    cubeNode = createSceneNode();
 
-    ballNode->nodeType = GEOMETRY;
-
-
-
-    rootNode->children.push_back(ballNode);
-
-
-
-    ballNode->vertexArrayObjectID = ballVAO;
-    ballNode->VAOIndexCount       = sphere.indices.size();
-    ballNode->position = glm::vec3(10, 10, -50);
+    rootNode->children.push_back(cubeNode);
+    cubeNode->nodeType = GEOMETRY;
+    cubeNode->vertexArrayObjectID = cubeVAO;
+    cubeNode->VAOIndexCount = square.indices.size();
+    cubeNode->position = glm::vec3(0,0, -400);
 
 
 }
 
 void updateFrame(GLFWwindow* window) {
 
-    double timeDelta = getTimeDeltaSeconds();
-
     
-    const float cameraWallOffset = 30; // Arbitrary addition to prevent ball from going too much into camera
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(windowWidth) / float(windowHeight), 0.1f, 750.f);
 
-    
-    glm::mat4 projection = glm::perspective(glm::radians(80.0f), float(windowWidth) / float(windowHeight), 0.1f, 350.f);
-
-    glm::vec3 cameraPosition = glm::vec3(0, 2, -10);
+    glm::vec3 cameraPosition = glm::vec3(-1.0, -1.0, -10.0);
 
     // Some math to make the camera move in a nice way
     glm::mat4 cameraTransform = glm::translate(-cameraPosition);
 
 
-    // To fragment shader camera postion
-    glUniform3fv(13, 1, glm::value_ptr(cameraPosition));
-
-    
-
     updateNodeTransformations(rootNode, cameraTransform, projection);
 
-
-    // Ball location
-    GLint ballLoc = glGetUniformLocation(shader->get(),"ballLoc");
-    glUniform3fv(ballLoc, 1, glm::value_ptr(glm::vec3(ballNode->ModelMatrix * glm::vec4(0.0,0.0,0.0,1.0))));
+   
 
 
 
@@ -157,7 +126,7 @@ void updateNodeTransformations(SceneNode* node, glm::mat4 transformationThusFar,
         case GEOMETRY: 
         {
 
-           transformationMatrix =
+            transformationMatrix =
                 glm::translate(node->position)
                 * glm::translate(node->referencePoint)
                 * glm::rotate(node->rotation.y, glm::vec3(0, 1, 0))
@@ -167,7 +136,7 @@ void updateNodeTransformations(SceneNode* node, glm::mat4 transformationThusFar,
                 * glm::translate(-node->referencePoint);
 
 
-
+            
 
 
         }
@@ -208,6 +177,8 @@ void renderNode(SceneNode* node)
 {
 
    
+
+   
     // MV Matrix to verte shader
     glUniformMatrix4fv(4, 1, GL_FALSE, glm::value_ptr(node->ModelMatrix));
 
@@ -219,9 +190,24 @@ void renderNode(SceneNode* node)
 
 
 
+
+    double last_time = 0;
+    double current_time = 0;
+    float deltatime = 0;
+
+
     switch(node->nodeType) {
         case GEOMETRY:
             if(node->vertexArrayObjectID != -1) {
+                
+                // Time for animation
+                current_time = glfwGetTime();
+                deltatime = current_time - last_time;
+                last_time = current_time;
+
+                GLint iTime = glGetUniformLocation(shader->get(), "u_time");
+                glUniform1f(iTime, last_time);
+                
                 glBindVertexArray(node->vertexArrayObjectID);
                 glDrawElements(GL_TRIANGLES, node->VAOIndexCount, GL_UNSIGNED_INT, nullptr);
             }
@@ -238,28 +224,7 @@ void renderNode(SceneNode* node)
         case SPOT_LIGHT: break;
         case NORMAL_MAPPED_GEOMETRY:
         {
-            /*
-            // Activate rendering for normal mapped geometry
-            glUniform1ui(9, 1);
-            
-            // Bind vertex
-            glBindVertexArray(node->vertexArrayObjectID);
-
-            // Bind texture 
-            glBindTextureUnit(0, node->textureID);
-
-            // Bind normal map
-            glBindTextureUnit(1, node->normalMapTextureID);
-
-            // Bind roughness map (NEW)
-            glBindTextureUnit(1, node->normalMapTextureID);
-
-            // Draw elements
-            glDrawElements(GL_TRIANGLES, node->VAOIndexCount, GL_UNSIGNED_INT, nullptr);
-
-            // Deactivate
-            glUniform1ui(9, 0);
-            */
+           
 
         }
             
@@ -279,15 +244,13 @@ void renderNode(SceneNode* node)
 
 
 
-
-
 void renderFrame(GLFWwindow* window) {
     int windowWidth, windowHeight;
     glfwGetWindowSize(window, &windowWidth, &windowHeight);
     glViewport(0, 0, windowWidth, windowHeight);
 
-    // Render 3d geometry
     renderNode(rootNode);
-    
+
+  
 
 }

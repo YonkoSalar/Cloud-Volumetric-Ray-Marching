@@ -1,7 +1,7 @@
 // Local headers
 #include "program.hpp"
 #include "gloom/gloom.hpp"
-
+#include "logic.h"
 
 void runProgram(GLFWwindow* window)
 {
@@ -13,9 +13,11 @@ void runProgram(GLFWwindow* window)
     glEnable(GL_CULL_FACE);
 
     // Set default colour after clearing the colour buffer
-    glClearColor(0.3f, 0.5f, 0.8f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+  
     // Set up your scene here (create Vertex Array Objects, etc.)
+    initScene(window);
 
     // Rendering Loop
     while (!glfwWindowShouldClose(window))
@@ -24,6 +26,8 @@ void runProgram(GLFWwindow* window)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Draw your scene here
+        renderFrame(window);
+        updateFrame(window);
 
         // Handle other events
         glfwPollEvents();

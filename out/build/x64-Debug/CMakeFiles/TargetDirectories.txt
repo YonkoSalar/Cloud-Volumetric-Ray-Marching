@@ -1,0 +1,8 @@
+C:/Projects/TDT4230/attempt-2/Final-Project/out/build/x64-Debug/CMakeFiles/gloom.dir
+C:/Projects/TDT4230/attempt-2/Final-Project/out/build/x64-Debug/CMakeFiles/edit_cache.dir
+C:/Projects/TDT4230/attempt-2/Final-Project/out/build/x64-Debug/CMakeFiles/rebuild_cache.dir
+C:/Projects/TDT4230/attempt-2/Final-Project/out/build/x64-Debug/gloom/vendor/glfw/CMakeFiles/edit_cache.dir
+C:/Projects/TDT4230/attempt-2/Final-Project/out/build/x64-Debug/gloom/vendor/glfw/CMakeFiles/rebuild_cache.dir
+C:/Projects/TDT4230/attempt-2/Final-Project/out/build/x64-Debug/gloom/vendor/glfw/src/CMakeFiles/rebuild_cache.dir
+C:/Projects/TDT4230/attempt-2/Final-Project/out/build/x64-Debug/gloom/vendor/glfw/src/CMakeFiles/glfw.dir
+C:/Projects/TDT4230/attempt-2/Final-Project/out/build/x64-Debug/gloom/vendor/glfw/src/CMakeFiles/edit_cache.dir
