@@ -37,39 +37,6 @@ Gloom::Shader* shaderText; // Added extra shader for drawing text output
 
 
 
-
-/*
-unsigned int getTextureID(PNGImage *img)
-{
-    // Texture ID
-    unsigned int textureID;
-
-    // How many textures we want
-    glGenTextures(1, &textureID);
- 
-    // Bound texture
-    glBindTexture(GL_TEXTURE_2D, textureID);
-
-
-    // Setting texture wrapping options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
-    // Generate textures
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->width, img->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixels.data());
-
-    // Genereate mipmaps
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-
-    return textureID;
-
-}
-*/
-
-
-
 void initScene(GLFWwindow* window) 
 {
     
@@ -110,9 +77,6 @@ void updateFrame(GLFWwindow* window) {
 
 
     updateNodeTransformations(rootNode, cameraTransform, projection);
-
-   
-
 
 
 }

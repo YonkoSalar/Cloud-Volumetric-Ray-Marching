@@ -22,31 +22,12 @@ out layout(location = 1) vec2 textureCoordinates_out;
 out vec3 FragPos;
 
 
-struct Ray 
-{
- vec3 origin;
- vec3 dir;
-};
-
-out Ray outRay;
-
-
 void main()
 {
     
     
     textureCoordinates_out = textureCoordinates_in;
     normal_out =  normalize(vec3(MV * vec4(normal_in,0.0)));
-
-    
-    // Get current position of fragment
-   //gl_Position = vec4(MV * vec4(position, 1.0f));
-
-   vec3 cameraPosition = vec3(0.0, 0.0, -2.0);
-
-
-   outRay.dir = position- cameraPosition;
-   outRay.origin = cameraPosition + vec3(0.5);
 
     gl_Position = MVP * vec4(position, 1.0f);
     

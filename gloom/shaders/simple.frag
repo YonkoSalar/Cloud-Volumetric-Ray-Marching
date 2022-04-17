@@ -12,7 +12,7 @@ uniform float u_time;
 
 
 #define STEPS 20
-#define OCTAVES 1
+#define OCTAVES 8
 #define ZMAX 35
 #define CAM_DISTANCE 35
 #define SHADOW_STEPS 20
@@ -155,8 +155,8 @@ float fbm( vec3 p )
 */
 
 float map(vec3 pos) {
-    pos += vec3(0.0, 0.0, -0.9);
-    float f = fbm(pos * 0.2);
+    pos += vec3(0.2, 0.2, -0.5);
+    float f = fbm(pos * 0.5);
     return clamp( f-0.2 , 0.0, 1.0 );
 }
 
@@ -196,15 +196,17 @@ vec3 rayMarch(vec3 pos, vec3 dir)
 
     // Create moving lights in our scene
     vec2 light_bulb_1 = vec2(-sin(u_time*0.9)*0.5 + cos(u_time*0.9)*0.3,-sin(u_time*0.9) + cos(u_time*0.4)*-0.2)*0.40 + 0.5;
-    vec3 light_color_1 = vec3(1.0, 0.6, 0.9);
+    vec3 light_color_1 = vec3(1.0, 0.0, 0.0);
     float cloud_strength_1 = (1.0-(distance(textureCoordinates, light_bulb_1)));
     float light_strength_1 = 1.0/(5*distance(textureCoordinates,light_bulb_1));
 
 
     vec2 light_bulb_2 = vec2(sin(u_time*0.9)*0.5 + cos(u_time*0.9)*0.3,sin(u_time*0.9) + cos(u_time*0.4)*-0.2)*0.40 + 0.5;
-    vec3 light_color_2 = vec3(0.0, 0.6, 0.9);
+    vec3 light_color_2 = vec3(0.0, 1.0, 0.0);
     float cloud_strength_2 = (1.0-(distance(textureCoordinates, light_bulb_2)));
     float light_strength_2 = 1.0/(5*distance(textureCoordinates,light_bulb_2));
+
+
     
 
 
@@ -218,7 +220,7 @@ vec3 rayMarch(vec3 pos, vec3 dir)
     for (int i = 0; i < STEPS; i++)
     {  
 
-             
+        
         if (transmit < 0.1)
         {
             break;
@@ -257,7 +259,7 @@ vec3 rayMarch(vec3 pos, vec3 dir)
             vec3 col = vec3(0.15, 0.45, 1.1);
             light_energy += col * (exp(-map(offset) * 0.2) * linearDensity * transmit) * (light_color_1*light_strength_1 + cloud_strength_1);
             light_energy += col * (exp(-map(offset) * 0.2) * linearDensity * transmit) * (light_color_2*light_strength_2 + cloud_strength_2);
-
+           
             
             lpos = pos + vec3(0.0, 0.0, 0.05);
             float lsample = map(lpos);
@@ -267,8 +269,7 @@ vec3 rayMarch(vec3 pos, vec3 dir)
             // Transmittance
             light_energy += ambient_color * (exp(-shadow *  AMBIENT_DENSITY) * linearDensity * transmit)  * (light_color_1*light_strength_1 + cloud_strength_1);
             light_energy += ambient_color * (exp(-shadow *  AMBIENT_DENSITY) * linearDensity * transmit)  * (light_color_2*light_strength_2 + cloud_strength_2);
-
-          
+           
             transmit *=  1.0 - linearDensity;
         }
         
