@@ -17,7 +17,7 @@ uniform float u_time;
 #define CAM_DISTANCE 35
 #define SHADOW_STEPS 20
 #define SHADOW_MAX 4
-#define OPACITY 4
+#define OPACITY 6
 #define SHADOW_STRENGTH 4
 #define AMBIENT_DENSITY 3
 
@@ -154,7 +154,7 @@ float fbm( vec3 p )
     vector. Some of these numbers randomly picked t until it got a more detailed look.
 */
 
-float get_density(vec3 pos) {
+float map(vec3 pos) {
     pos += vec3(0.0, 0.0, -0.9);
     float f = fbm(pos * 0.2);
     return clamp( f-0.2 , 0.0, 1.0 );
@@ -162,11 +162,21 @@ float get_density(vec3 pos) {
 
 
 
+
+
+
 ////////////////////
 //   RAY MARCH   //
 ///////////////////
-// Reference for creating volumetric ray marcher
-// Inspiration https://www.shadertoy.com/view/MdyGzR
+
+/*
+    Reference for creating volumetric ray marcher
+
+    Inspiration:
+    - https://www.shadertoy.com/view/MdyGzR
+    - https://shaderbits.com/blog/creating-volumetric-ray-marcher/
+*/
+
 
 vec3 rayMarch(vec3 pos, vec3 dir)
 {
@@ -180,7 +190,7 @@ vec3 rayMarch(vec3 pos, vec3 dir)
     
 
     // Computing light
-    vec3 light = vec3(0);
+    vec3 light_energy = vec3(0);
     float transmit = 1.0;
   
 
@@ -196,8 +206,15 @@ vec3 rayMarch(vec3 pos, vec3 dir)
     float cloud_strength_2 = (1.0-(distance(textureCoordinates, light_bulb_2)));
     float light_strength_2 = 1.0/(5*distance(textureCoordinates,light_bulb_2));
     
-    
-   
+
+
+    // Light source direction
+    vec3 light_source_1 = normalize(light_color_1*light_strength_1 );
+    vec3 light_source_2 = normalize(light_color_2*light_strength_2 );
+
+
+ 
+
     for (int i = 0; i < STEPS; i++)
     {  
 
@@ -209,18 +226,18 @@ vec3 rayMarch(vec3 pos, vec3 dir)
         
          
          // Get density of current position
-         float density = get_density(pos)  ;
+         float density = map(pos);
 
 
          if (density > 0.001)
          {
-            vec3 lpos = pos + light;
+            vec3 lpos = pos + light_energy;
             float shadow = 0.0;
             
             for (int s = 0; s < SHADOW_STEPS; s++)
             {
-                lpos +=  shadow_step;
-                shadow += get_density(lpos);
+                lpos +=  light_source_1 * light_source_2 * shadow_step;
+                shadow += map(lpos);
             }
                         
             float ds = density * inverse_step;
@@ -232,23 +249,26 @@ vec3 rayMarch(vec3 pos, vec3 dir)
             
             
             float cloudDarkness = shadowterm * linearDensity * transmit;
-            light += cloud_color * cloudDarkness;
+            light_energy += cloud_color * cloudDarkness;
             
+
+            // Out-scattering
             vec3 offset = pos + vec3(0.0, 0.25, 0.0);
             vec3 col = vec3(0.15, 0.45, 1.1);
-            
-            light += col * (exp(-get_density(offset) * 0.2) * linearDensity * transmit);
+            light_energy += col * (exp(-map(offset) * 0.2) * linearDensity * transmit) * (light_color_1*light_strength_1 + cloud_strength_1);
+            light_energy += col * (exp(-map(offset) * 0.2) * linearDensity * transmit) * (light_color_2*light_strength_2 + cloud_strength_2);
+
             
             lpos = pos + vec3(0.0, 0.0, 0.05);
-            float lsample = get_density(lpos);
+            float lsample = map(lpos);
             shadow += lsample;
             
            
-            light += ambient_color * (exp(-shadow *  AMBIENT_DENSITY) * linearDensity * transmit)  * (light_color_1*light_strength_1 + cloud_strength_1);
-            
-            light += ambient_color * (exp(-shadow *  AMBIENT_DENSITY) * linearDensity * transmit)  * (light_color_2*light_strength_2 + cloud_strength_2);
+            // Transmittance
+            light_energy += ambient_color * (exp(-shadow *  AMBIENT_DENSITY) * linearDensity * transmit)  * (light_color_1*light_strength_1 + cloud_strength_1);
+            light_energy += ambient_color * (exp(-shadow *  AMBIENT_DENSITY) * linearDensity * transmit)  * (light_color_2*light_strength_2 + cloud_strength_2);
 
-        
+          
             transmit *=  1.0 - linearDensity;
         }
         
@@ -262,10 +282,10 @@ vec3 rayMarch(vec3 pos, vec3 dir)
         vec3 blue_color = mix(vec3(0.3, 0.6, 1.0), vec3(0.05, 0.35, 1.0), 1.0 );
 
         // Add the transmitted light with blue color to get a sky colour background
-        light += transmit * blue_color;
+        light_energy += transmit * blue_color;
 
   
-        return light;
+        return light_energy;
   
 }
 
@@ -282,7 +302,8 @@ void main()
     vec3 result = rayMarch(position, dir);
 
     // Mulitply by a lower value to get a darker scene
-    color = vec4(result, 1.0) * 0.4;
+    float darkness = 0.4;
+    color = vec4(result, 1.0) * darkness;
     
     
 
