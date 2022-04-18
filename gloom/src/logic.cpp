@@ -1,7 +1,6 @@
 #include <chrono>
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
-//#include <SFML/Audio/SoundBuffer.hpp>
 #include <gloom/shader.hpp>
 #include <glm/vec3.hpp>
 #include <iostream>
@@ -9,21 +8,14 @@
 #include <gloom/mesh.h>
 #include <gloom/shapes.h>
 #include <gloom/glutils.h>
-//#include <gloom/Audio/Sound.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-//#include <fmt/format.h>
 #include "logic.h"
 #include "sceneGraph.hpp"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
-#include "gloom/imageLoader.hpp"
-#include "gloom/glfont.h"
 #include <gloom/gloom.hpp>
 #include <gloom/camera.hpp>
-
-
-
 
 
 
@@ -33,8 +25,6 @@ Gloom::Camera* cam = new Gloom::Camera();
 
 
 Gloom::Shader* shader;
-Gloom::Shader* shaderText; // Added extra shader for drawing text output
-
 
 
 void initScene(GLFWwindow* window) 
@@ -46,7 +36,7 @@ void initScene(GLFWwindow* window)
     shader->activate();
 
 
-    // Create mesh (Full screen: 600 x 400)
+    // Create mesh
     Mesh square = cube(glm::vec3(600,600,0), glm::vec2(1,1));
 
     // Fill buffers

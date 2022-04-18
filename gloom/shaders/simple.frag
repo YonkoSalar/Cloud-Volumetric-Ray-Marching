@@ -11,13 +11,13 @@ uniform float u_time;
 
 
 
-#define STEPS 20
-#define OCTAVES 8
+#define STEPS 15
+#define OCTAVES 6
 #define ZMAX 35
 #define CAM_DISTANCE 35
 #define SHADOW_STEPS 20
 #define SHADOW_MAX 4
-#define OPACITY 0.35
+#define OPACITY 0.4
 #define SHADOW_STRENGTH 4
 #define AMBIENT_DENSITY 3
 #define PI 3.14159265359
@@ -196,7 +196,7 @@ vec3 rayMarch(vec3 pos, vec3 dir)
     vec3 light_sources_sum = vec3(0.0,0.0,0.0);
     vec3 cloud_strength_sum = vec3(0.0,0.0,0.0);
    
-   // Create animation path
+   // Create animation path (Rhodonea curve)
     int n_lights = 100;
     float k = u_time/3 ;
     for (int i = 0; i < n_lights; i++){
@@ -213,6 +213,7 @@ vec3 rayMarch(vec3 pos, vec3 dir)
     }
     
 
+    // Perform sampling
     for (int i = 0; i < STEPS; i++)
     {  
 
