@@ -20,7 +20,7 @@
 #include "gloom/imageLoader.hpp"
 #include "gloom/glfont.h"
 #include <gloom/gloom.hpp>
-#include <gloom/Camera.hpp>
+#include <gloom/camera.hpp>
 
 
 
@@ -47,7 +47,7 @@ void initScene(GLFWwindow* window)
 
 
     // Create mesh (Full screen: 600 x 400)
-    Mesh square = cube(glm::vec3(350,300,0), glm::vec2(1,1));
+    Mesh square = cube(glm::vec3(600,600,0), glm::vec2(1,1));
 
     // Fill buffers
     unsigned int cubeVAO = generateBuffer(square);

@@ -17,7 +17,7 @@ uniform float u_time;
 #define CAM_DISTANCE 35
 #define SHADOW_STEPS 20
 #define SHADOW_MAX 4
-#define OPACITY 6
+#define OPACITY 0.35
 #define SHADOW_STRENGTH 4
 #define AMBIENT_DENSITY 3
 
@@ -156,7 +156,7 @@ float fbm( vec3 p )
 
 float map(vec3 pos) {
     pos += vec3(0.2, 0.2, -0.5);
-    float f = fbm(pos * 0.5);
+    float f = fbm(pos * 0.2);
     return clamp( f-0.2 , 0.0, 1.0 );
 }
 
@@ -193,27 +193,55 @@ vec3 rayMarch(vec3 pos, vec3 dir)
     vec3 light_energy = vec3(0);
     float transmit = 1.0;
   
-
+/*
     // Create moving lights in our scene
-    vec2 light_bulb_1 = vec2(-sin(u_time*0.9)*0.5 + cos(u_time*0.9)*0.3,-sin(u_time*0.9) + cos(u_time*0.4)*-0.2)*0.40 + 0.5;
+    vec2 light_bulb_1 = vec2(-sin(u_time*0.9)*0.5 + cos(u_time*0.9)*0.3,-sin(u_time*0.9) + cos(u_time*0.4)*-0.2)*0.20 + 0.5;
     vec3 light_color_1 = vec3(1.0, 0.0, 0.0);
     float cloud_strength_1 = (1.0-(distance(textureCoordinates, light_bulb_1)));
     float light_strength_1 = 1.0/(5*distance(textureCoordinates,light_bulb_1));
 
 
-    vec2 light_bulb_2 = vec2(sin(u_time*0.9)*0.5 + cos(u_time*0.9)*0.3,sin(u_time*0.9) + cos(u_time*0.4)*-0.2)*0.40 + 0.5;
-    vec3 light_color_2 = vec3(0.0, 1.0, 0.0);
+    vec2 light_bulb_2 = vec2(sin(u_time*0.9)*0.5 + cos(u_time*0.9)*0.3,sin(u_time*0.9) + cos(u_time*0.4)*-0.2)*0.20 + 0.5;
+    vec3 light_color_2 = vec3(0.7, 0.4, 0.2);
     float cloud_strength_2 = (1.0-(distance(textureCoordinates, light_bulb_2)));
     float light_strength_2 = 1.0/(5*distance(textureCoordinates,light_bulb_2));
+*/
 
+    vec3 light_sources_sum = vec3(0.0,0.0,0.0);
+    vec3 cloud_strength_sum = vec3(0.0,0.0,0.0);
+    /*
+    for (int i = 0; i < 20; i++){
+        vec2 light_bulb_i = vec2(sin(u_time*0.9 + 2*3.14159265359/20 *i)*0.5 + cos(u_time*0.9 + 2*3.14159265359/20 *i)*0.3,sin(u_time*0.9+ 2*3.14159265359/20 *i) + cos(u_time*0.4+ 2*3.14159265359/20 *i)*-0.2)*0.20 + 0.5;
+        vec3 light_color_i = vec3(0.7, 0.4, 0.2) ;
+        float cloud_strength_i = (1.0-(distance(textureCoordinates, light_bulb_i)));
+        float light_strength_i = 1.0/(1.0*distance(textureCoordinates,light_bulb_i));
 
+        light_sources_sum += normalize(light_color_i*light_strength_i);
+        cloud_strength_sum += light_color_i * light_strength_i + cloud_strength_i;
+    }
+    */
+    #define PI 3.14159265359
+    int n_lights = 100;
+    float k = u_time/3 ;
+    for (int i = 0; i < n_lights; i++){
+        float t = u_time*0.3 + 2*PI/n_lights *i;
+        vec2 light_bulb_i = vec2(  cos(t*k)*cos(t),
+                                    cos(t*k)*sin(t)) * 0.2 + 0.5;
+
+        vec3 light_color_i = vec3(0.3, 0.8, 0.3);
+        float cloud_strength_i = (1.0-(distance(textureCoordinates, light_bulb_i*1.0)));
+        float light_strength_i = 1.0/(5.0*distance(textureCoordinates,light_bulb_i));
+
+        light_sources_sum += normalize(light_color_i*light_strength_i);
+        cloud_strength_sum += light_color_i * light_strength_i + cloud_strength_i;
+    }
     
 
-
+/*
     // Light source direction
     vec3 light_source_1 = normalize(light_color_1*light_strength_1 );
     vec3 light_source_2 = normalize(light_color_2*light_strength_2 );
-
+*/
 
  
 
@@ -238,7 +266,7 @@ vec3 rayMarch(vec3 pos, vec3 dir)
             
             for (int s = 0; s < SHADOW_STEPS; s++)
             {
-                lpos +=  light_source_1 * light_source_2 * shadow_step;
+                lpos +=  light_sources_sum * shadow_step;
                 shadow += map(lpos);
             }
                         
@@ -257,8 +285,11 @@ vec3 rayMarch(vec3 pos, vec3 dir)
             // Out-scattering
             vec3 offset = pos + vec3(0.0, 0.25, 0.0);
             vec3 col = vec3(0.15, 0.45, 1.1);
+            /*
             light_energy += col * (exp(-map(offset) * 0.2) * linearDensity * transmit) * (light_color_1*light_strength_1 + cloud_strength_1);
             light_energy += col * (exp(-map(offset) * 0.2) * linearDensity * transmit) * (light_color_2*light_strength_2 + cloud_strength_2);
+            */
+            light_energy += col * (exp(-map(offset) * 0.2) * linearDensity * transmit) * (cloud_strength_sum); 
            
             
             lpos = pos + vec3(0.0, 0.0, 0.05);
@@ -267,8 +298,10 @@ vec3 rayMarch(vec3 pos, vec3 dir)
             
            
             // Transmittance
+            /*
             light_energy += ambient_color * (exp(-shadow *  AMBIENT_DENSITY) * linearDensity * transmit)  * (light_color_1*light_strength_1 + cloud_strength_1);
-            light_energy += ambient_color * (exp(-shadow *  AMBIENT_DENSITY) * linearDensity * transmit)  * (light_color_2*light_strength_2 + cloud_strength_2);
+            light_energy += ambient_color * (exp(-shadow *  AMBIENT_DENSITY) * linearDensity * transmit)  * (light_color_2*light_strength_2 + cloud_strength_2);*/
+            light_energy += ambient_color * (exp(-shadow *  AMBIENT_DENSITY) * linearDensity * transmit)  * (cloud_strength_sum);
            
             transmit *=  1.0 - linearDensity;
         }
@@ -296,7 +329,7 @@ void main()
 {
 
     // Get distance and calculate some movements to the camera
-    vec3 position = CAM_DISTANCE * normalize(vec3(cos(u_time*0.5)+sin(u_time * 0.6), sin(u_time * 0.9) - tan(u_time* 0.2), -40));
+    vec3 position = CAM_DISTANCE * normalize(vec3(cos(u_time*0.5)+sin(u_time * 0.6), sin(u_time * 0.9), -40));
     vec3 dir = normalize(vec3(textureCoordinates, 1.0));
     
     // Perform the ray march
@@ -304,7 +337,7 @@ void main()
 
     // Mulitply by a lower value to get a darker scene
     float darkness = 0.4;
-    color = vec4(result, 1.0) * darkness;
+    color = vec4(result * darkness, 1.0);
     
     
 
