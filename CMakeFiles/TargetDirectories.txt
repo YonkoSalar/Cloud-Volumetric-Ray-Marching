@@ -1,8 +1,4 @@
-/home/tobias/Cloud-Volumetric-Ray-Marching/CMakeFiles/rebuild_cache.dir
-/home/tobias/Cloud-Volumetric-Ray-Marching/CMakeFiles/edit_cache.dir
-/home/tobias/Cloud-Volumetric-Ray-Marching/CMakeFiles/gloom.dir
-/home/tobias/Cloud-Volumetric-Ray-Marching/gloom/vendor/glfw/CMakeFiles/rebuild_cache.dir
-/home/tobias/Cloud-Volumetric-Ray-Marching/gloom/vendor/glfw/CMakeFiles/edit_cache.dir
-/home/tobias/Cloud-Volumetric-Ray-Marching/gloom/vendor/glfw/src/CMakeFiles/rebuild_cache.dir
-/home/tobias/Cloud-Volumetric-Ray-Marching/gloom/vendor/glfw/src/CMakeFiles/edit_cache.dir
-/home/tobias/Cloud-Volumetric-Ray-Marching/gloom/vendor/glfw/src/CMakeFiles/glfw.dir
+C:/Projects/Cloud-Volumetric-Ray-Marching/CMakeFiles/gloom.dir
+C:/Projects/Cloud-Volumetric-Ray-Marching/CMakeFiles/ALL_BUILD.dir
+C:/Projects/Cloud-Volumetric-Ray-Marching/gloom/vendor/glfw/CMakeFiles/ALL_BUILD.dir
+C:/Projects/Cloud-Volumetric-Ray-Marching/gloom/vendor/glfw/src/CMakeFiles/glfw.dir
